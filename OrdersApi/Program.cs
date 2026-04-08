@@ -1,8 +1,7 @@
-using System.Reflection.Metadata.Ecma335;
+using Commands.Validators;
+using FluentValidation;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.VisualBasic;
 using OrdersApi.Handlers;
-using OrdersApi.Models;
 using OrdersApi.Queries;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -13,6 +12,8 @@ builder.Services.AddOpenApi();
 builder.Services.AddControllers();
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlite(builder.Configuration.GetConnectionString("BaseConnection")));
+
+builder.Services.AddScoped<IValidator<CreateOrderCommand>, CreateOrderCommandValidator>();
 
 builder.Services.AddScoped<ICommandHandler<CreateOrderCommand, OrderDto>, CreateOrderCommandHandler>();
 builder.Services.AddScoped<IQueryHandler<GetOrderByIdQuery, OrderDto?>, GetOrderByIdQueryHandler>();
@@ -29,9 +30,16 @@ app.MapControllers();
 
 app.MapPost("/api/orders", async (ICommandHandler<CreateOrderCommand, OrderDto> createOrderCommandHandler, CreateOrderCommand orderCommand) =>
 {
-    var createdOrder = await createOrderCommandHandler.HandleAsync(orderCommand);
-
-    return Results.Created($"/api/orders/{createdOrder.Id}", createdOrder);
+    try
+    {
+        var createdOrder = await createOrderCommandHandler.HandleAsync(orderCommand);
+    
+        return Results.Created($"/api/orders/{createdOrder.Id}", createdOrder);
+    }
+    catch (ValidationException ex)
+    {
+        return Results.BadRequest(ex.Errors);
+    }
 });
 
 app.MapGet("/api/orders/{id}", async (IQueryHandler<GetOrderByIdQuery, OrderDto?> getOrderByIdQueryHandler, int id) =>
