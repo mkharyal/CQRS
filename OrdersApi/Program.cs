@@ -1,7 +1,9 @@
 using System.Reflection.Metadata.Ecma335;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.VisualBasic;
+using OrdersApi.Handlers;
 using OrdersApi.Models;
+using OrdersApi.Queries;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -22,17 +24,18 @@ if (app.Environment.IsDevelopment())
 
 app.MapControllers();
 
-app.MapPost("/api/orders", async (AppDbContext context, Order order) =>
+app.MapPost("/api/orders", async (AppDbContext context, CreateOrderCommand orderCommand) =>
 {
-    await context.Orders.AddAsync(order);
-    await context.SaveChangesAsync();
+    var createdOrder = await CreateOrderCommandHandler.Handle(orderCommand, context);
 
-    return Results.Created($"/api/orders/{order.Id}", order);
+    return Results.Created($"/api/orders/{createdOrder.Id}", createdOrder);
 });
 
 app.MapGet("/api/orders/{id}", async (AppDbContext context, int id) =>
-    await context.Orders.FindAsync(id) is Order order
-        ? Results.Ok(order)
-        : Results.NotFound());
+{
+    return await GetOrderByIdQueryHandler.Handle(new GetOrderByIdQuery(id), context) is Order o ?
+                    Results.Ok(o) :
+                    Results.NotFound();
+});
 
 app.Run();
