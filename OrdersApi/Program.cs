@@ -14,6 +14,9 @@ builder.Services.AddControllers();
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlite(builder.Configuration.GetConnectionString("BaseConnection")));
 
+builder.Services.AddScoped<ICommandHandler<CreateOrderCommand, OrderDto>, CreateOrderCommandHandler>();
+builder.Services.AddScoped<IQueryHandler<GetOrderByIdQuery, OrderDto?>, GetOrderByIdQueryHandler>();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -24,16 +27,16 @@ if (app.Environment.IsDevelopment())
 
 app.MapControllers();
 
-app.MapPost("/api/orders", async (AppDbContext context, CreateOrderCommand orderCommand) =>
+app.MapPost("/api/orders", async (ICommandHandler<CreateOrderCommand, OrderDto> createOrderCommandHandler, CreateOrderCommand orderCommand) =>
 {
-    var createdOrder = await CreateOrderCommandHandler.Handle(orderCommand, context);
+    var createdOrder = await createOrderCommandHandler.HandleAsync(orderCommand);
 
     return Results.Created($"/api/orders/{createdOrder.Id}", createdOrder);
 });
 
-app.MapGet("/api/orders/{id}", async (AppDbContext context, int id) =>
+app.MapGet("/api/orders/{id}", async (IQueryHandler<GetOrderByIdQuery, OrderDto?> getOrderByIdQueryHandler, int id) =>
 {
-    return await GetOrderByIdQueryHandler.Handle(new GetOrderByIdQuery(id), context) is Order o ?
+    return await getOrderByIdQueryHandler.HandleAsync(new GetOrderByIdQuery(id)) is OrderDto o ?
                     Results.Ok(o) :
                     Results.NotFound();
 });

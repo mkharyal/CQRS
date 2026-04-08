@@ -2,22 +2,23 @@ using OrdersApi.Models;
 
 namespace OrdersApi.Handlers
 {
-    public class CreateOrderCommandHandler
+    public class CreateOrderCommandHandler(AppDbContext context) : ICommandHandler<CreateOrderCommand, OrderDto>
     {
-        public static async Task<Order> Handle(CreateOrderCommand command, AppDbContext context)
+        public async Task<OrderDto> HandleAsync(CreateOrderCommand command)
         {
             var order = new Order
             {
                 FirstName = command.FirstName,
                 LastName = command.LastName,
                 Status = command.Status,
-                TotalCost = command.Cost
+                TotalCost = command.Cost,
+                CreatedAt = DateTime.UtcNow
             };
 
             context.Orders.Add(order);
             await context.SaveChangesAsync();
 
-            return order;
+            return new OrderDto(order.Id, order.FirstName, order.LastName, order.Status, order.CreatedAt, order.TotalCost);
         }
     }
 }
