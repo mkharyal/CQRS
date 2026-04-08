@@ -5,7 +5,7 @@ This is a sample ASP.NET Core Web API project demonstrating the implementation o
 ## Progress
 ![alt text](Initial.png)
 
-![alt text](WithHandlers.png)
+![alt text](WithAbstraction.png)
 
 ## Features
 
