@@ -3,7 +3,7 @@ using OrdersApi.Models;
 
 namespace OrdersApi.Handlers
 {
-    public class CreateOrderCommandHandler(AppDbContext context, IValidator<CreateOrderCommand> validator) : ICommandHandler<CreateOrderCommand, OrderDto>
+    public class CreateOrderCommandHandler(AppDbContext context, IValidator<CreateOrderCommand> validator, IEventPublisher eventPublisher) : ICommandHandler<CreateOrderCommand, OrderDto>
     {
         public async Task<OrderDto> HandleAsync(CreateOrderCommand command)
         {
@@ -25,6 +25,16 @@ namespace OrdersApi.Handlers
 
             context.Orders.Add(order);
             await context.SaveChangesAsync();
+
+            var orderCreatedEvent = new OrderCreatedEvent
+            (
+                order.Id,
+                order.FirstName,
+                order.LastName,
+                order.TotalCost
+            );
+
+            await eventPublisher.PublishAsync(orderCreatedEvent);
 
             return new OrderDto(order.Id, order.FirstName, order.LastName, order.Status, order.CreatedAt, order.TotalCost);
         }
