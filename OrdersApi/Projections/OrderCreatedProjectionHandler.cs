@@ -1,8 +1,9 @@
+using MediatR;
 using OrdersApi.Models;
 
-public class OrderCreatedProjectionHandler(ReadDbContext readDbContext) : IEventHandler<OrderCreatedEvent>
+public class OrderCreatedProjectionHandler(ReadDbContext readDbContext) : INotificationHandler<OrderCreatedEvent>
 {
-    public async Task HandleAsync(OrderCreatedEvent @event)
+    public async Task Handle(OrderCreatedEvent @event, CancellationToken cancellationToken)
     {
         var order = new Order
         {
@@ -14,7 +15,7 @@ public class OrderCreatedProjectionHandler(ReadDbContext readDbContext) : IEvent
             CreatedAt = DateTime.UtcNow
         };
 
-        await readDbContext.Orders.AddAsync(order);
-        await readDbContext.SaveChangesAsync();
+        await readDbContext.Orders.AddAsync(order, cancellationToken);
+        await readDbContext.SaveChangesAsync(cancellationToken);
     }
 }

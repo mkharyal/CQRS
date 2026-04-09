@@ -1,13 +1,15 @@
 using FluentValidation;
+using MediatR;
 using OrdersApi.Models;
 
 namespace OrdersApi.Handlers
 {
-    public class CreateOrderCommandHandler(WriteDbContext context, IValidator<CreateOrderCommand> validator, IEventPublisher eventPublisher, IServiceProvider serviceProvider) : ICommandHandler<CreateOrderCommand, OrderDto>
+    public class CreateOrderCommandHandler(WriteDbContext context, IValidator<CreateOrderCommand> validator, IMediator mediator)
+    : IRequestHandler<CreateOrderCommand, OrderDto>
     {
-        public async Task<OrderDto> HandleAsync(CreateOrderCommand command)
+        public async Task<OrderDto> Handle(CreateOrderCommand command, CancellationToken cancellationToken)
         {
-            var validationResult = await validator.ValidateAsync(command);
+            var validationResult = await validator.ValidateAsync(command, cancellationToken);
 
             if (!validationResult.IsValid)
             {
@@ -23,8 +25,8 @@ namespace OrdersApi.Handlers
                 CreatedAt = DateTime.UtcNow
             };
 
-            context.Orders.Add(order);
-            await context.SaveChangesAsync();
+            await context.Orders.AddAsync(order, cancellationToken);
+            await context.SaveChangesAsync(cancellationToken);
 
             var orderCreatedEvent = new OrderCreatedEvent
             (
@@ -34,13 +36,7 @@ namespace OrdersApi.Handlers
                 order.TotalCost
             );
 
-            using var scope = serviceProvider.CreateScope();
-            var scopedEventPublishers = scope.ServiceProvider.GetServices<IEventPublisher>();
-
-            foreach (var handler in scopedEventPublishers)
-            {
-                await handler.PublishAsync(orderCreatedEvent);
-            }
+            await mediator.Publish(orderCreatedEvent, cancellationToken);
 
             return new OrderDto(order.Id, order.FirstName, order.LastName, order.Status, order.CreatedAt, order.TotalCost);
         }

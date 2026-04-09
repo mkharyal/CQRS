@@ -1,15 +1,17 @@
+using MediatR;
 using Microsoft.EntityFrameworkCore;
 
-public class GetOrderSummariesQueryHandler(ReadDbContext dbContext) : IQueryHandler<GetOrderSummariesQuery, IEnumerable<OrderSummaryDto>>
+public class GetOrderSummariesQueryHandler(ReadDbContext dbContext) : IRequestHandler<GetOrderSummariesQuery, IEnumerable<OrderSummaryDto>>
 {
-    public async Task<IEnumerable<OrderSummaryDto>> HandleAsync(GetOrderSummariesQuery query)
+    public async Task<IEnumerable<OrderSummaryDto>> Handle(GetOrderSummariesQuery request, CancellationToken cancellationToken)
     {
         return await dbContext.Orders
+            .AsNoTracking()
             .Select(o => new OrderSummaryDto(
                 o.Id,
                 $"{o.FirstName} {o.LastName}",
                 o.Status,
                 o.TotalCost))
-            .ToListAsync();
+            .ToListAsync(cancellationToken);
     }
 }
