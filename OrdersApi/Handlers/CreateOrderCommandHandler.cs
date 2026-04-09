@@ -3,7 +3,7 @@ using OrdersApi.Models;
 
 namespace OrdersApi.Handlers
 {
-    public class CreateOrderCommandHandler(WriteDbContext context, IValidator<CreateOrderCommand> validator, IEventPublisher eventPublisher) : ICommandHandler<CreateOrderCommand, OrderDto>
+    public class CreateOrderCommandHandler(WriteDbContext context, IValidator<CreateOrderCommand> validator, IEventPublisher eventPublisher, IServiceProvider serviceProvider) : ICommandHandler<CreateOrderCommand, OrderDto>
     {
         public async Task<OrderDto> HandleAsync(CreateOrderCommand command)
         {
@@ -34,7 +34,13 @@ namespace OrdersApi.Handlers
                 order.TotalCost
             );
 
-            await eventPublisher.PublishAsync(orderCreatedEvent);
+            using var scope = serviceProvider.CreateScope();
+            var scopedEventPublishers = scope.ServiceProvider.GetServices<IEventPublisher>();
+
+            foreach (var handler in scopedEventPublishers)
+            {
+                await handler.PublishAsync(orderCreatedEvent);
+            }
 
             return new OrderDto(order.Id, order.FirstName, order.LastName, order.Status, order.CreatedAt, order.TotalCost);
         }

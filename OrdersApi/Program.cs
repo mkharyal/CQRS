@@ -23,6 +23,7 @@ builder.Services.AddScoped<ICommandHandler<CreateOrderCommand, OrderDto>, Create
 builder.Services.AddScoped<IQueryHandler<GetOrderByIdQuery, OrderDto?>, GetOrderByIdQueryHandler>();
 builder.Services.AddScoped<IQueryHandler<GetOrderSummariesQuery, IEnumerable<OrderSummaryDto>>, GetOrderSummariesQueryHandler>();
 builder.Services.AddSingleton<IEventPublisher, InProcessEventPublisher>();
+builder.Services.AddSingleton<IEventPublisher, ConsoleEventPublisher>();
 builder.Services.AddScoped<IEventHandler<OrderCreatedEvent>, OrderCreatedProjectionHandler>();
 
 var app = builder.Build();
