@@ -12,6 +12,10 @@ builder.Services.AddOpenApi();
 builder.Services.AddControllers();
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlite(builder.Configuration.GetConnectionString("BaseConnection")));
+builder.Services.AddDbContext<WriteDbContext>(options =>
+    options.UseSqlite(builder.Configuration.GetConnectionString("WriteDataDbConnection")));
+builder.Services.AddDbContext<ReadDbContext>(options =>
+    options.UseSqlite(builder.Configuration.GetConnectionString("ReadDataDbConnection")));
 
 builder.Services.AddScoped<IValidator<CreateOrderCommand>, CreateOrderCommandValidator>();
 

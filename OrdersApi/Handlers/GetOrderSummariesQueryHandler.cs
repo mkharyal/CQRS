@@ -1,6 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 
-public class GetOrderSummariesQueryHandler(AppDbContext dbContext) : IQueryHandler<GetOrderSummariesQuery, IEnumerable<OrderSummaryDto>>
+public class GetOrderSummariesQueryHandler(ReadDbContext dbContext) : IQueryHandler<GetOrderSummariesQuery, IEnumerable<OrderSummaryDto>>
 {
     public async Task<IEnumerable<OrderSummaryDto>> HandleAsync(GetOrderSummariesQuery query)
     {

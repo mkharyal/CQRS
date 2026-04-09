@@ -3,7 +3,7 @@ using OrdersApi.Models;
 
 namespace OrdersApi.Handlers
 {
-    public class CreateOrderCommandHandler(AppDbContext context, IValidator<CreateOrderCommand> validator, IEventPublisher eventPublisher) : ICommandHandler<CreateOrderCommand, OrderDto>
+    public class CreateOrderCommandHandler(WriteDbContext context, IValidator<CreateOrderCommand> validator, IEventPublisher eventPublisher) : ICommandHandler<CreateOrderCommand, OrderDto>
     {
         public async Task<OrderDto> HandleAsync(CreateOrderCommand command)
         {

@@ -1,7 +1,6 @@
-using OrdersApi.Models;
 using OrdersApi.Queries;
 
-public class GetOrderByIdQueryHandler(AppDbContext context) : IQueryHandler<GetOrderByIdQuery, OrderDto?>
+public class GetOrderByIdQueryHandler(ReadDbContext context) : IQueryHandler<GetOrderByIdQuery, OrderDto?>
 {
     public async Task<OrderDto?> HandleAsync(GetOrderByIdQuery query)
     {
