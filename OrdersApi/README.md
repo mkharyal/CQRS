@@ -3,9 +3,18 @@
 This is a sample ASP.NET Core Web API project demonstrating the implementation of CQRS (Command Query Responsibility Segregation) pattern for managing orders.
 
 ## Progress
-![alt text](Initial.png)
 
-![alt text](WithAbstraction.png)
+### Initial Setup
+![alt text](Images/Initial.png)
+
+### Adding Abstraction
+![alt text](Images/WithAbstraction.png)
+
+### Projection
+![alt text](Images/OrderCreatedProjectionHandler.png)
+
+### MediatR
+![alt text](Images/MediatR.png)
 
 ## Features
 
