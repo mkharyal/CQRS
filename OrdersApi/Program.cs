@@ -17,6 +17,7 @@ builder.Services.AddScoped<IValidator<CreateOrderCommand>, CreateOrderCommandVal
 
 builder.Services.AddScoped<ICommandHandler<CreateOrderCommand, OrderDto>, CreateOrderCommandHandler>();
 builder.Services.AddScoped<IQueryHandler<GetOrderByIdQuery, OrderDto?>, GetOrderByIdQueryHandler>();
+builder.Services.AddScoped<IQueryHandler<GetOrderSummariesQuery, IEnumerable<OrderSummaryDto>>, GetOrderSummariesQueryHandler>();
 
 var app = builder.Build();
 
@@ -46,6 +47,13 @@ app.MapGet("/api/orders/{id}", async (IQueryHandler<GetOrderByIdQuery, OrderDto?
 {
     return await getOrderByIdQueryHandler.HandleAsync(new GetOrderByIdQuery(id)) is OrderDto o ?
                     Results.Ok(o) :
+                    Results.NotFound();
+});
+
+app.MapGet("/api/orders", async (IQueryHandler<GetOrderSummariesQuery, IEnumerable<OrderSummaryDto>> queryHandler) =>
+{
+    return await queryHandler.HandleAsync(new GetOrderSummariesQuery()) is IEnumerable<OrderSummaryDto> orderSummaries ?
+                    Results.Ok(orderSummaries) :
                     Results.NotFound();
 });
 
